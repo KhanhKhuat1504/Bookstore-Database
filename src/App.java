@@ -196,13 +196,60 @@ public class App {
 
     // Option 3: Search book by cover
     public static void option3(String connectionUrl) {
-
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter the title of the book: ");
+        String bookTitle = scanner.nextLine();
+    
+        try {
+            // Establishing a connection
+            Connection conn = DriverManager.getConnection(connectionUrl);
+    
+            // Creating a statement
+            PreparedStatement stmt = conn.prepareStatement("SELECT * FROM book WHERE title LIKE ?");
+            stmt.setString(1, bookTitle);
+    
+            // Executing the query
+            ResultSet rs = stmt.executeQuery();
+    
+            // Processing the result
+            while (rs.next()) {
+                System.out.println("Book Title: " + rs.getString("title"));
+                // Add more print statements for other book details
+            }
+    
+            // Closing the connection
+            conn.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
+    
+    
 
     // Option 4: List all authors description
     public static void option4(String connectionUrl) {
-
+        try {
+            // Establishing a connection
+            Connection conn = DriverManager.getConnection(connectionUrl);
+    
+            // Creating a statement
+            Statement stmt = conn.createStatement();
+    
+            // Executing the query
+            ResultSet rs = stmt.executeQuery("SELECT concat(firstname, ' ', lastname) as author_name from author");
+    
+            // Processing the result
+            while (rs.next()) {
+                System.out.println("Author Name: " + rs.getString("author_name"));
+            }
+    
+            // Closing the connection
+            conn.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
+    
 
     // Option 5: Add new book
     public static void option5(String connectionUrl) {
@@ -211,8 +258,37 @@ public class App {
 
     // Option 6: Count books
     public static void option6(String connectionUrl) {
-
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter the title of the book: ");
+        String title = scanner.nextLine();
+        System.out.println("Enter the ID of the book: ");
+        int id = scanner.nextInt();
+    
+        try {
+            // Establishing a connection
+            Connection conn = DriverManager.getConnection(connectionUrl);
+    
+            // Creating a statement
+            PreparedStatement stmt = conn.prepareStatement("select stock_quantity from book where title = ? and id = ?");
+            stmt.setString(1, title);
+            stmt.setInt(2, id);
+    
+            // Executing the query
+            ResultSet rs = stmt.executeQuery();
+    
+            // Processing the result
+            if (rs.next()) {
+                System.out.println("Stock Quantity: " + rs.getInt("stock_quantity"));
+            }
+    
+            // Closing the connection
+            conn.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
+    
+    
 
     // Option 7: Update book prices
     public static void option7(String connectionUrl) {
