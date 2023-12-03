@@ -199,57 +199,54 @@ public class App {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Enter the title of the book: ");
         String bookTitle = scanner.nextLine();
-    
+
         try {
             // Establishing a connection
             Connection conn = DriverManager.getConnection(connectionUrl);
-    
+
             // Creating a statement
             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM book WHERE title LIKE ?");
             stmt.setString(1, bookTitle);
-    
+
             // Executing the query
             ResultSet rs = stmt.executeQuery();
-    
+
             // Processing the result
             while (rs.next()) {
                 System.out.println("Book Title: " + rs.getString("title"));
                 // Add more print statements for other book details
             }
-    
+
             // Closing the connection
             conn.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
-    
-    
 
     // Option 4: List all authors description
     public static void option4(String connectionUrl) {
         try {
             // Establishing a connection
             Connection conn = DriverManager.getConnection(connectionUrl);
-    
+
             // Creating a statement
             Statement stmt = conn.createStatement();
-    
+
             // Executing the query
             ResultSet rs = stmt.executeQuery("SELECT concat(firstname, ' ', lastname) as author_name from author");
-    
+
             // Processing the result
             while (rs.next()) {
                 System.out.println("Author Name: " + rs.getString("author_name"));
             }
-    
+
             // Closing the connection
             conn.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
-    
 
     // Option 5: Add new book
     public static void option5(String connectionUrl) {
@@ -263,32 +260,31 @@ public class App {
         String title = scanner.nextLine();
         System.out.println("Enter the ID of the book: ");
         int id = scanner.nextInt();
-    
+
         try {
             // Establishing a connection
             Connection conn = DriverManager.getConnection(connectionUrl);
-    
+
             // Creating a statement
-            PreparedStatement stmt = conn.prepareStatement("select stock_quantity from book where title = ? and id = ?");
+            PreparedStatement stmt = conn
+                    .prepareStatement("select stock_quantity from book where title = ? and id = ?");
             stmt.setString(1, title);
             stmt.setInt(2, id);
-    
+
             // Executing the query
             ResultSet rs = stmt.executeQuery();
-    
+
             // Processing the result
             if (rs.next()) {
                 System.out.println("Stock Quantity: " + rs.getInt("stock_quantity"));
             }
-    
+
             // Closing the connection
             conn.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
-    
-    
 
     // Option 7: Update book prices
     public static void option7(String connectionUrl) {
@@ -440,22 +436,90 @@ public class App {
 
     // Option 10: Find orders within a specific date range
     public static void option10(String connectionUrl) {
-
+        String fromDate = sc.next();
+        String toDate = sc.next();
+        if (!validateDate(fromDate) || !validateDate(toDate)) {
+            System.out.println("The input dates are invalid!");
+            return;
+        }
+        try (Connection connection = DriverManager.getConnection(connectionUrl);
+                Statement statement = connection.createStatement();) {
+            // Create and execute a SELECT SQL statement.
+            String selectSql = "SELECT * FROM BookOrder" + "WHERE date BETWEEN" + fromDate + "AND" + toDate + ";";
+            fromDate = sc.nextLine();
+            toDate = sc.nextLine();
+            statement.execute(selectSql);
+            printTable(connectionUrl, selectSql);
+            // Print results from select statement
+        } catch (Exception e) {
+            System.out.println(e);
+            return;
+        }
     }
 
     // Option 11: Retrieve all books in a specific genre
     public static void option11(String connectionUrl) {
+        System.out.print("Pick your poison: ");
+        String genreString = sc.next();
+        if (!isValidName(genreString)) {
+            System.out.println("The input position is invalid!");
+            return;
+        }
 
+        genreString = formatInput(genreString);
+
+        try (Connection connection = DriverManager.getConnection(connectionUrl);
+                Statement statement = connection.createStatement();) {
+            // Create and execute a SELECT SQL statement.
+            String selectSql = "SELECT * FROM Book" + "INNER JOIN Genre ON Book.genreID = Genre.ID WHERE Genre.name ="
+                    + genreString;
+            System.out.println("Books that are in the " + genreString + "category: ");
+            statement.execute(selectSql);
+
+            printTable(connectionUrl, selectSql);
+            // Print results from select statement
+        } catch (Exception e) {
+            System.out.println(e);
+            return;
+        }
     }
 
     // Option 12: Calculate total revenue from a specific date range
     public static void option12(String connectionUrl) {
-
+        String from = sc.next();
+        String to = sc.next();
+        if (!validateDate(from) || !validateDate(to)) {
+            System.out.println("The input dates are invalid!");
+            return;
+        }
+        try (Connection connection = DriverManager.getConnection(connectionUrl);
+                Statement statement = connection.createStatement();) {
+            // Create and execute a SELECT SQL statement.
+            String selectSql = "SELECT SUM(total_price) AS TotalRevenue" + "FROM BookOrder WHERE date BETWEEN" + from
+                    + "AND" + to + ";";
+            statement.execute(selectSql);
+            // Print results from select statement
+        } catch (Exception e) {
+            // System.out.println("No sales were made during this period");
+            System.out.println(e);
+            return;
+        }
     }
 
     // Option 13: Display books with low stock
     public static void option13(String connectionUrl) {
-
+        try (Connection connection = DriverManager.getConnection(connectionUrl);
+                Statement statement = connection.createStatement();) {
+            // Create and execute a SELECT SQL statement.
+            String selectSql = "SELECT * FROM Book WHERE stock_quantity < 10;";
+            statement.execute(selectSql);
+            System.out.println("New email has successfully updated");
+            // Print results from select statement
+        } catch (Exception e) {
+            // System.out.println("No book is in low stock");
+            System.out.println(e);
+            return;
+        }
     }
 
     private static String formatInput(String input) {
