@@ -199,24 +199,25 @@ public class App {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Enter part of the title of the book: ");
         String bookTitle = scanner.nextLine();
-      
+
         try {
             // Establishing a connection
             Connection conn = DriverManager.getConnection(connectionUrl);
-      
+
             // Creating a statement
             PreparedStatement stmt = conn.prepareStatement(
-                    "SELECT b.title, g.name AS genreName, b.price, b.description, CASE WHEN b.stock_quantity > 0 THEN 'Yes' ELSE 'No' END AS isAvailable, CONCAT(a.firstname, ' ', a.lastname) AS authorName " +
-                    "FROM book b " +
-                    "JOIN genre g ON b.genreID = g.ID " +
-                    "JOIN Writes w ON b.ID = w.book_id " +
-                    "JOIN Author a ON w.author_id = a.ID " +
-                    "WHERE b.title LIKE ?");
+                    "SELECT b.title, g.name AS genreName, b.price, b.description, CASE WHEN b.stock_quantity > 0 THEN 'Yes' ELSE 'No' END AS isAvailable, CONCAT(a.firstname, ' ', a.lastname) AS authorName "
+                            +
+                            "FROM book b " +
+                            "JOIN genre g ON b.genreID = g.ID " +
+                            "JOIN Writes w ON b.ID = w.book_id " +
+                            "JOIN Author a ON w.author_id = a.ID " +
+                            "WHERE b.title LIKE ?");
             stmt.setString(1, "%" + bookTitle + "%");
-      
+
             // Executing the query
             ResultSet rs = stmt.executeQuery();
-      
+
             // Processing the result
             while (rs.next()) {
                 System.out.println("Book Title: " + rs.getString("title"));
@@ -227,82 +228,77 @@ public class App {
                 System.out.println("Author Name: " + rs.getString("authorName"));
                 System.out.println();
             }
-      
-            // Closing the connection
-            conn.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-      }
-      
-     
-    
-    
 
-    // Option 4: List all authors 
-    public static void option4(String connectionUrl) {
-        try {
-            // Establishing a connection
-            Connection conn = DriverManager.getConnection(connectionUrl);
-    
-            // Creating a statement
-            Statement stmt = conn.createStatement();
-    
-            // Executing the query
-            ResultSet rs = stmt.executeQuery("SELECT concat(firstname, ' ', lastname) as author_name from author");
-    
-            // Processing the result
-            while (rs.next()) {
-                System.out.println("Author Name: " + rs.getString("author_name"));
-            }
-    
             // Closing the connection
             conn.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
-    
 
-    public static void option5(String connectionUrl) {
-        Scanner scanner = new Scanner(System.in);
-        
-        System.out.println("Enter the title of the book: ");
-        String title = scanner.nextLine();
-        
-        System.out.println("Enter the price of the book: ");
-        double price = scanner.nextDouble();
-        
-        scanner.nextLine(); // Consume newline left-over
-        
-        System.out.println("Enter the genre name of the book: ");
-        String genreName = scanner.nextLine();
-        
-        System.out.println("Enter the description of the book: ");
-        String description = scanner.nextLine();
-        
-        System.out.println("Enter the stock quantity of the book: ");
-        int stockQuantity = scanner.nextInt();
-        
-        scanner.nextLine(); // Consume newline left-over
-        
-        System.out.println("Enter the first name of the author: ");
-        String authorFirstName = scanner.nextLine();
-        
-        System.out.println("Enter the last name of the author: ");
-        String authorLastName = scanner.nextLine();
-        
+    // Option 4: List all authors
+    public static void option4(String connectionUrl) {
         try {
             // Establishing a connection
             Connection conn = DriverManager.getConnection(connectionUrl);
-     
+
+            // Creating a statement
+            Statement stmt = conn.createStatement();
+
+            // Executing the query
+            ResultSet rs = stmt.executeQuery("SELECT concat(firstname, ' ', lastname) as author_name from author");
+
+            // Processing the result
+            while (rs.next()) {
+                System.out.println("Author Name: " + rs.getString("author_name"));
+            }
+
+            // Closing the connection
+            conn.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void option5(String connectionUrl) {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Enter the title of the book: ");
+        String title = scanner.nextLine();
+
+        System.out.println("Enter the price of the book: ");
+        double price = scanner.nextDouble();
+
+        scanner.nextLine(); // Consume newline left-over
+
+        System.out.println("Enter the genre name of the book: ");
+        String genreName = scanner.nextLine();
+
+        System.out.println("Enter the description of the book: ");
+        String description = scanner.nextLine();
+
+        System.out.println("Enter the stock quantity of the book: ");
+        int stockQuantity = scanner.nextInt();
+
+        scanner.nextLine(); // Consume newline left-over
+
+        System.out.println("Enter the first name of the author: ");
+        String authorFirstName = scanner.nextLine();
+
+        System.out.println("Enter the last name of the author: ");
+        String authorLastName = scanner.nextLine();
+
+        try {
+            // Establishing a connection
+            Connection conn = DriverManager.getConnection(connectionUrl);
+
             // Creating a statement
             PreparedStatement stmt = conn.prepareStatement(
                     "INSERT INTO Genre (name) SELECT ? WHERE NOT EXISTS (SELECT 1 FROM Genre WHERE name = ?)");
             stmt.setString(1, genreName);
             stmt.setString(2, genreName);
             stmt.executeUpdate();
-     
+
             stmt = conn.prepareStatement(
                     "INSERT INTO Author (firstname, lastname) SELECT ?, ? WHERE NOT EXISTS (SELECT 1 FROM Author WHERE firstname = ? AND lastname = ?)");
             stmt.setString(1, authorFirstName);
@@ -310,7 +306,7 @@ public class App {
             stmt.setString(3, authorFirstName);
             stmt.setString(4, authorLastName);
             stmt.executeUpdate();
-     
+
             // Get the genreID and authorID
             stmt = conn.prepareStatement("SELECT id FROM Genre WHERE name = ?");
             stmt.setString(1, genreName);
@@ -319,7 +315,7 @@ public class App {
             if (rs.next()) {
                 genreID = rs.getInt("id");
             }
-     
+
             stmt = conn.prepareStatement("SELECT id FROM Author WHERE firstname = ? AND lastname = ?");
             stmt.setString(1, authorFirstName);
             stmt.setString(2, authorLastName);
@@ -328,7 +324,7 @@ public class App {
             if (rs.next()) {
                 authorID = rs.getInt("id");
             }
-     
+
             // Insert the new book
             stmt = conn.prepareStatement(
                     "INSERT INTO Book (title, price, genreID, description, stock_quantity) VALUES (?, ?, ?, ?, ?)");
@@ -338,53 +334,50 @@ public class App {
             stmt.setString(4, description);
             stmt.setInt(5, stockQuantity);
             stmt.executeUpdate();
-     
+
             // Linking book to author
             stmt = conn.prepareStatement(
                     "INSERT INTO Writes (book_id, author_id) VALUES ((SELECT id FROM book WHERE title = ?), ?)");
             stmt.setString(1, title);
             stmt.setInt(2, authorID);
             stmt.executeUpdate();
-     
-            // Closing the connection
-            conn.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-     }
-     
-      
-    
 
-    // Option 6: Count books
-    public static void option6(String connectionUrl) {
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Enter the title of the book: ");
-        String title = scanner.nextLine();
-    
-        try {
-            // Establishing a connection
-            Connection conn = DriverManager.getConnection(connectionUrl);
-    
-            // Creating a statement
-            PreparedStatement stmt = conn.prepareStatement("select stock_quantity from book where title = ?");
-            stmt.setString(1, title);
-
-    
-            // Executing the query
-            ResultSet rs = stmt.executeQuery();
-    
-            // Processing the result
-            if (rs.next()) {
-                System.out.println("Stock Quantity: " + rs.getInt("stock_quantity"));
-            }
-    
             // Closing the connection
             conn.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
+
+    // Option 6: Count books
+    public static void option6(String connectionUrl) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter the title of the book: ");
+        String title = scanner.nextLine();
+
+        try {
+            // Establishing a connection
+            Connection conn = DriverManager.getConnection(connectionUrl);
+
+            // Creating a statement
+            PreparedStatement stmt = conn.prepareStatement("select stock_quantity from book where title = ?");
+            stmt.setString(1, title);
+
+            // Executing the query
+            ResultSet rs = stmt.executeQuery();
+
+            // Processing the result
+            if (rs.next()) {
+                System.out.println("Stock Quantity: " + rs.getInt("stock_quantity"));
+            }
+
+            // Closing the connection
+            conn.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     // Option 7: Update book prices
     public static void option7(String connectionUrl) {
         sc = new Scanner(System.in);
@@ -441,13 +434,17 @@ public class App {
         int customerID = sc.nextInt();
 
         // Step 1: Create a new order
-        String createOrderSql = "{call CreateNewOrder(?)}";
+        String createOrderSql = "{call CreateNewOrder(?, ?)}";
+        int orderID = 0;
         try (Connection connection = DriverManager.getConnection(connectionUrl);
                 CallableStatement cstmt = connection.prepareCall(createOrderSql)) {
 
             cstmt.setInt(1, customerID);
+            cstmt.registerOutParameter(2, Types.INTEGER);
             cstmt.executeUpdate();
-            System.out.println("New order created successfully.");
+
+            orderID = cstmt.getInt(2);
+            System.out.println("New order created successfully. Order ID: " + orderID);
 
         } catch (SQLException e) {
             System.out.println("Error occurred during order creation.");
@@ -456,12 +453,6 @@ public class App {
         }
 
         // Step 2: Add items to the order
-        // Assuming that the user knows the order ID.
-        // In a real application, you might want to retrieve and display the order ID
-        // after creation.
-        System.out.print("Enter the Order ID: ");
-        int orderID = sc.nextInt();
-
         String addItemsSql = "{call InsertOrderItem(?, ?, ?)}";
         boolean addMoreItems;
         do {
